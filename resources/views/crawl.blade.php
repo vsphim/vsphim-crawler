@@ -403,8 +403,13 @@
         $('.btn-process').click(function() {
             const values = $(".movie-checkbox:checked")
                 .map(function() {
-                    return JSON.parse(decodeURI($(this).val()));
-                }).get();
+                    try {
+                        return JSON.parse(decodeURI($(this).val()));
+                    } catch (error) {
+                        console.error('Invalid movie payload', $(this).val(), error);
+                        return null;
+                    }
+                }).get().filter(Boolean);
 
             const template = (data) => {
                 let html = '';
