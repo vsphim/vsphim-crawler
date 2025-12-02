@@ -144,20 +144,9 @@ class Crawler extends BaseCrawler
         $flag = 0;
         foreach ($payload['episodes'] as $server) {
             foreach ($server['server_data'] as $episode) {
-                if ($episode['link_m3u8']) {
-                    Episode::updateOrCreate([
-                        'id' => $movie->episodes[$flag]->id ?? null
-                    ], [
-                        'name' => $episode['name'],
-                        'movie_id' => $movie->id,
-                        'server' => $server['server_name'],
-                        'type' => 'm3u8',
-                        'link' => $episode['link_m3u8'],
-                        'slug' => 'tap-' . Str::slug($episode['name'])
-                    ]);
-                    $flag++;
-                }
-                if ($episode['link_embed']) {
+                $linkEmbed = $episode['link_embed'] ?? null;
+
+                if (!empty($linkEmbed)) {
                     Episode::updateOrCreate([
                         'id' => $movie->episodes[$flag]->id ?? null
                     ], [
@@ -165,7 +154,7 @@ class Crawler extends BaseCrawler
                         'movie_id' => $movie->id,
                         'server' => $server['server_name'],
                         'type' => 'embed',
-                        'link' => $episode['link_embed'],
+                        'link' => $linkEmbed,
                         'slug' => 'tap-' . Str::slug($episode['name'])
                     ]);
                     $flag++;
