@@ -3,7 +3,7 @@
 @php
     $defaultBreadcrumbs = [
         trans('backpack::crud.admin') => backpack_url('dashboard'),
-        'Crawler' => backpack_url('plugin/ophim-crawler'),
+        'Crawler' => backpack_url('plugin/vsphim-crawler'),
     ];
 
     $breadcrumbs = $breadcrumbs ?? $defaultBreadcrumbs;
@@ -304,7 +304,7 @@
 
             const fetchApi = async (link, from, to) => {
                 isFetching = true;
-                const response = await fetch("{{ backpack_url('plugin/ophim-crawler/fetch') }}?" +
+                const response = await fetch("{{ backpack_url('plugin/vsphim-crawler/fetch') }}?" +
                     new URLSearchParams({
                         link,
                         from,
@@ -514,7 +514,7 @@
             const excludedRegions = $("[name='excludedRegions[]']").val()
             const excludedType = $("[name='excludedType[]']").val()
             const forceUpdate = ($("[name='force_update']").prop('checked') == true) ? true : false;
-            const response = await fetch("{{ backpack_url('plugin/ophim-crawler/crawl') }}", {
+            const response = await fetch("{{ backpack_url('plugin/vsphim-crawler/crawl') }}", {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -547,7 +547,7 @@
             const apiDomain = "{{ config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api') }}";
             let params = $("select[name=movies-get-params]").find(":selected").val();
 
-            const response = await fetch("{{ backpack_url('plugin/ophim-crawler/get-movies') }}", {
+            const response = await fetch("{{ backpack_url('plugin/vsphim-crawler/get-movies') }}", {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",

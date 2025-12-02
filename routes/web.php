@@ -16,10 +16,10 @@ Route::group([
     ),
     'namespace'  => 'Vsphim\Crawler\VsphimCrawler\Controllers',
 ], function () {
-    Route::get('/plugin/ophim-crawler', 'CrawlController@showCrawlPage');
-    Route::get('/plugin/ophim-crawler/options', 'CrawlerSettingController@editOptions');
-    Route::put('/plugin/ophim-crawler/options', 'CrawlerSettingController@updateOptions');
-    Route::get('/plugin/ophim-crawler/fetch', 'CrawlController@fetch');
-    Route::post('/plugin/ophim-crawler/crawl', 'CrawlController@crawl');
-    Route::post('/plugin/ophim-crawler/get-movies', 'CrawlController@getMoviesFromParams');
+    Route::get('/plugin/vsphim-crawler', 'CrawlController@showCrawlPage');
+    Route::get('/plugin/vsphim-crawler/options', 'CrawlerSettingController@editOptions');
+    Route::put('/plugin/vsphim-crawler/options', 'CrawlerSettingController@updateOptions');
+    Route::get('/plugin/vsphim-crawler/fetch', 'CrawlController@fetch');
+    Route::post('/plugin/vsphim-crawler/crawl', 'CrawlController@crawl');
+    Route::post('/plugin/vsphim-crawler/get-movies', 'CrawlController@getMoviesFromParams');
 });

@@ -32,7 +32,7 @@ class CrawlerScheduleCommand extends Command
      */
     public function __construct()
     {
-        $this->logger = Log::channel('ophim-crawler');
+        $this->logger = Log::channel('vsphim-crawler');
         parent::__construct();
     }
 

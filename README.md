@@ -21,7 +21,7 @@ https://github.com/vsphim/vsphim-core
 
 ## API Source
 - Default API domain: `https://nguon.vsphim.com/api-document`
-- Endpoints are compatible with original Ophim API:
+- Endpoints are compatible with Vsphim API gateway:
   - `/danh-sach/phim-moi-cap-nhat`
   - `/the-loai`
   - `/quoc-gia`

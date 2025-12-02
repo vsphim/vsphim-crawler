@@ -12,7 +12,7 @@ use Vsphim\Core\Models\Movie;
 
 /**
  * Class CrawlController
- * @package Ophim\Crawler\OphimCrawler\Controllers
+ * @package Vsphim\Crawler\VsphimCrawler\Controllers
  * @property-read \Backpack\CRUD\app\Library\CrudPanel\CrudPanel $crud
  */
 class CrawlController extends CrudController
@@ -67,7 +67,7 @@ class CrawlController extends CrudController
 
         $fields = $this->movieUpdateOptions();
 
-        return view('ophim-crawler::crawl', compact('fields', 'regions', 'categories'));
+        return view('vsphim-crawler::crawl', compact('fields', 'regions', 'categories'));
     }
 
     public function crawl(Request $request)
