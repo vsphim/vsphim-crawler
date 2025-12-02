@@ -5,6 +5,7 @@ namespace Vsphim\Crawler\VsphimCrawler;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Collector
 {
@@ -24,9 +25,13 @@ class Collector
         $info = $this->payload['movie'] ?? [];
         $episodes = $this->payload['episodes'] ?? [];
 
+        $slug = Str::slug($info['name']);
+        $slug = Str::limit($slug, 190, '');
+
         $data = [
             'name' => $info['name'],
             'origin_name' => $info['origin_name'],
+            'slug' => $slug,
             'publish_year' => $info['year'],
             'content' => $info['content'],
             'type' =>  $this->getMovieType($info, $episodes),
