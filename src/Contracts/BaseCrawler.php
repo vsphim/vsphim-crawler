@@ -1,6 +1,6 @@
 <?php
 
-namespace Vsphim\Crawler\VsphimCrawler\Contracts;
+namespace VsMov\Crawler\VsMovCrawler\Contracts;
 
 abstract class BaseCrawler
 {

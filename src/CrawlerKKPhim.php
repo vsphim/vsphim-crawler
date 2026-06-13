@@ -12,7 +12,7 @@ use VsMov\Core\Models\Region;
 use VsMov\Core\Models\Tag;
 use VsMov\Crawler\VsMovCrawler\Contracts\BaseCrawler;
 
-class Crawler extends BaseCrawler
+class CrawlerKKPhim extends BaseCrawler
 {
     public function handle()
     {
@@ -43,7 +43,7 @@ class Crawler extends BaseCrawler
             return false;
         }
 
-        $info = (new Collector($payload, $this->fields, $this->forceUpdate, $movie))->get();
+        $info = (new Collector($payload, $this->fields, $this->forceUpdate, $movie))->getKKPhim();
 
         if ($movie) {
             $movie->updated_at = now();
@@ -159,10 +159,11 @@ class Crawler extends BaseCrawler
         $flag = 0;
         foreach ($payload['episodes'] as $server) {
             foreach ($server['server_data'] as $episode) {
+                $serverName = $server['server_name'] . ' (KK)';
                 if (!empty($episode['link_m3u8'])) {
                     Episode::updateOrCreate([
                         'id' => $movie->episodes[$flag]->id ?? null,
-                        'server' => $server['server_name']
+                        'server' => $serverName
                     ], [
                         'name' => $episode['name'],
                         'movie_id' => $movie->id,
@@ -175,7 +176,7 @@ class Crawler extends BaseCrawler
                 if (!empty($episode['link_embed'])) {
                     Episode::updateOrCreate([
                         'id' => $movie->episodes[$flag]->id ?? null,
-                        'server' => $server['server_name']
+                        'server' => $serverName
                     ], [
                         'name' => $episode['name'],
                         'movie_id' => $movie->id,

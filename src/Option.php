@@ -1,6 +1,6 @@
 <?php
 
-namespace Vsphim\Crawler\VsphimCrawler;
+namespace VsMov\Crawler\VsMovCrawler;
 
 use Backpack\Settings\app\Models\Setting;
 use Illuminate\Support\Facades\Cache;
@@ -28,7 +28,7 @@ class Option
     //     $options[$name] = $value;
 
     //     return Setting::updateOrCreate([
-    //         'key' => 'vsphim/vsphim-crawler.options',
+    //         'key' => 'vsmov/vsmov-crawler.options',
     //     ], [
     //         'name' => 'Options',
     //         'field' => json_encode(['name' => 'value', 'type', 'hidden']),
@@ -41,7 +41,7 @@ class Option
     public static function getEntry()
     {
         return Setting::firstOrCreate([
-            'key' => 'vsphim/vsphim-crawler.options',
+            'key' => 'vsmov/vsmov-crawler.options',
         ], [
             'name' => 'Options',
             'field' => json_encode(['name' => 'value', 'type', 'hidden']),
@@ -55,13 +55,13 @@ class Option
         $categories = [];
         $regions = [];
         try {
-            $categories = Cache::remember('vsphim_categories', 86400, function () {
-                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api'))), true) ?? [];
+            $categories = Cache::remember('vsmov_categories', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsmov_crawler.domain', 'https://vsmov.com/api'))), true) ?? [];
                 return collect($data)->pluck('name', 'name')->toArray();
             });
 
-            $regions = Cache::remember('vsphim_regions', 86400, function () {
-                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api'))), true) ?? [];
+            $regions = Cache::remember('vsmov_regions', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsmov_crawler.domain', 'https://vsmov.com/api'))), true) ?? [];
                 return collect($data)->pluck('name', 'name')->toArray();
             });
         } catch (\Throwable $th) {
@@ -100,9 +100,30 @@ class Option
         return [
             'domain' => [
                 'name' => 'domain',
-                'label' => 'API Domain',
+                'label' => 'VsMov API Domain',
                 'type' => 'text',
-                'value' => 'https://nguon.vsphim.com/api',
+                'value' => 'https://vsmov.com/api',
+                'tab' => 'Setting'
+            ],
+            'domain_ophim' => [
+                'name' => 'domain_ophim',
+                'label' => 'OPhim API Domain',
+                'type' => 'text',
+                'value' => 'https://ophim1.com',
+                'tab' => 'Setting'
+            ],
+            'domain_kkphim' => [
+                'name' => 'domain_kkphim',
+                'label' => 'KKPhim API Domain',
+                'type' => 'text',
+                'value' => 'https://phimapi.com',
+                'tab' => 'Setting'
+            ],
+            'domain_nguonc' => [
+                'name' => 'domain_nguonc',
+                'label' => 'NguonC API Domain',
+                'type' => 'text',
+                'value' => 'https://phim.nguonc.com',
                 'tab' => 'Setting'
             ],
             'download_image' => [
@@ -180,6 +201,34 @@ class Option
             'crawler_schedule_enable' => [
                 'name' => 'crawler_schedule_enable',
                 'label' => '<b>Bật/Tắt tự động</b>',
+                'default' => false,
+                'type' => 'checkbox',
+                'tab' => 'Schedule'
+            ],
+            'crawler_schedule_enable_vsmov' => [
+                'name' => 'crawler_schedule_enable_vsmov',
+                'label' => '<b>Bật/Tắt tự động VsMov</b>',
+                'default' => false,
+                'type' => 'checkbox',
+                'tab' => 'Schedule'
+            ],
+            'crawler_schedule_enable_ophim' => [
+                'name' => 'crawler_schedule_enable_ophim',
+                'label' => '<b>Bật/Tắt tự động OPhim</b>',
+                'default' => false,
+                'type' => 'checkbox',
+                'tab' => 'Schedule'
+            ],
+            'crawler_schedule_enable_kkphim' => [
+                'name' => 'crawler_schedule_enable_kkphim',
+                'label' => '<b>Bật/Tắt tự động KKPhim</b>',
+                'default' => false,
+                'type' => 'checkbox',
+                'tab' => 'Schedule'
+            ],
+            'crawler_schedule_enable_nguonc' => [
+                'name' => 'crawler_schedule_enable_nguonc',
+                'label' => '<b>Bật/Tắt tự động NguonC</b>',
                 'default' => false,
                 'type' => 'checkbox',
                 'tab' => 'Schedule'

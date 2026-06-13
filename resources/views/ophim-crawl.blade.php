@@ -3,7 +3,7 @@
 @php
     $defaultBreadcrumbs = [
         trans('backpack::crud.admin') => backpack_url('dashboard'),
-        'Crawler' => backpack_url('plugin/vsmov-crawler'),
+        'Crawler' => backpack_url('plugin/ophim-crawler'),
     ];
 
     $breadcrumbs = $breadcrumbs ?? $defaultBreadcrumbs;
@@ -12,7 +12,7 @@
 @section('header')
     <section class="container-fluid">
         <h2>
-            <span class="text-capitalize">VsMov</span>
+            <span class="text-capitalize">OPhim</span>
             <small>Crawler</small>
         </h2>
     </section>
@@ -35,7 +35,7 @@
                                 </select>
                                 <button class="btn btn-sm btn-primary" id="movies-get-handle">Lấy danh sách</button>
                             </div>
-                            <textarea class="form-control" rows="5" name="link">https://vsmov.com/api/danh-sach/phim-moi-cap-nhat</textarea>
+                            <textarea class="form-control" rows="5" name="link">https://ophim1.com/v1/api/danh-sach/phim-moi</textarea>
                             <small><i>Mỗi link cách nhau 1 dòng</i></small>
                         </div>
                         <div class="form-group col-12">
@@ -304,7 +304,7 @@
 
             const fetchApi = async (link, from, to) => {
                 isFetching = true;
-                const response = await fetch("{{ backpack_url('plugin/vsmov-crawler/fetch') }}?" +
+                const response = await fetch("{{ backpack_url('plugin/vsmov-crawler/fetch-ophim') }}?" +
                     new URLSearchParams({
                         link,
                         from,
@@ -514,7 +514,7 @@
             const excludedRegions = $("[name='excludedRegions[]']").val()
             const excludedType = $("[name='excludedType[]']").val()
             const forceUpdate = ($("[name='force_update']").prop('checked') == true) ? true : false;
-            const response = await fetch("{{ backpack_url('plugin/vsmov-crawler/crawl') }}", {
+            const response = await fetch("{{ backpack_url('plugin/vsmov-crawler/crawl-ophim') }}", {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -544,7 +544,7 @@
         }
 
         $("#movies-get-handle").click(async function() {
-            const apiDomain = "{{ config('vsmov_crawler.domain', 'https://vsmov.com/api') }}";
+            const apiDomain = "{{ config('vsmov_crawler.domain_ophim', 'https://ophim1.com') }}";
             let params = $("select[name=movies-get-params]").find(":selected").val();
 
             const response = await fetch("{{ backpack_url('plugin/vsmov-crawler/get-movies') }}", {

@@ -12,7 +12,7 @@ use VsMov\Core\Models\Region;
 use VsMov\Core\Models\Tag;
 use VsMov\Crawler\VsMovCrawler\Contracts\BaseCrawler;
 
-class Crawler extends BaseCrawler
+class CrawlerOPhim extends BaseCrawler
 {
     public function handle()
     {
@@ -20,21 +20,21 @@ class Crawler extends BaseCrawler
 
         $this->checkIsInExcludedList($payload);
 
-        $movie = Movie::where('name', $payload['movie']['name'])
-            ->where('type', $payload['movie']['type'])
-            ->where('publish_year', $payload['movie']['year'])
+        $movie = Movie::where('name', $payload['data']['item']['name'])
+            ->where('type', $payload['data']['item']['type'])
+            ->where('publish_year', $payload['data']['item']['year'])
             ->first();
 
         if(!$movie) {
-            $movie = Movie::where('origin_name', $payload['movie']['origin_name'])
-                ->where('publish_year', $payload['movie']['year'])
-                ->where('type', $payload['movie']['type'])
+            $movie = Movie::where('origin_name', $payload['data']['item']['origin_name'])
+                ->where('publish_year', $payload['data']['item']['year'])
+                ->where('type', $payload['data']['item']['type'])
                 ->first();
 
             if(!$movie) {
-                $movie = Movie::where('slug', $payload['movie']['slug'])
-                    ->where('type', $payload['movie']['type'])
-                    ->where('publish_year', $payload['movie']['year'])
+                $movie = Movie::where('slug', $payload['data']['item']['slug'])
+                    ->where('type', $payload['data']['item']['type'])
+                    ->where('publish_year', $payload['data']['item']['year'])
                     ->first();
             }
         }
@@ -43,7 +43,7 @@ class Crawler extends BaseCrawler
             return false;
         }
 
-        $info = (new Collector($payload, $this->fields, $this->forceUpdate, $movie))->get();
+        $info = (new Collector($payload, $this->fields, $this->forceUpdate, $movie))->getOPhim();
 
         if ($movie) {
             $movie->updated_at = now();
@@ -51,7 +51,7 @@ class Crawler extends BaseCrawler
         } else {
             $movie = Movie::create(array_merge($info, [
                 'update_handler' => static::class,
-                'update_identity' => $payload['movie']['_id'],
+                'update_identity' => $payload['data']['item']['_id'],
                 'update_checksum' => md5($body)
             ]));
         }
@@ -72,17 +72,17 @@ class Crawler extends BaseCrawler
 
     protected function checkIsInExcludedList($payload)
     {
-        $newType = $payload['movie']['type'];
+        $newType = $payload['data']['item']['type'];
         if (in_array($newType, $this->excludedType)) {
             throw new \Exception("Thuộc định dạng đã loại trừ");
         }
 
-        $newCategories = collect($payload['movie']['category'])->pluck('name')->toArray();
+        $newCategories = collect($payload['data']['item']['category'])->pluck('name')->toArray();
         if (array_intersect($newCategories, $this->excludedCategories)) {
             throw new \Exception("Thuộc thể loại đã loại trừ");
         }
 
-        $newRegions = collect($payload['movie']['country'])->pluck('name')->toArray();
+        $newRegions = collect($payload['data']['item']['country'])->pluck('name')->toArray();
         if (array_intersect($newRegions, $this->excludedRegions)) {
             throw new \Exception("Thuộc quốc gia đã loại trừ");
         }
@@ -93,7 +93,7 @@ class Crawler extends BaseCrawler
         if (!in_array('actors', $this->fields)) return;
 
         $actors = [];
-        foreach ($payload['movie']['actor'] as $actor) {
+        foreach ($payload['data']['item']['actor'] as $actor) {
             if (!trim($actor)) continue;
             $actors[] = Actor::firstOrCreate(['name' => trim($actor)])->id;
         }
@@ -105,7 +105,7 @@ class Crawler extends BaseCrawler
         if (!in_array('directors', $this->fields)) return;
 
         $directors = [];
-        foreach ($payload['movie']['director'] as $director) {
+        foreach ($payload['data']['item']['director'] as $director) {
             if (!trim($director)) continue;
             $directors[] = Director::firstOrCreate(['name' => trim($director)])->id;
         }
@@ -116,12 +116,12 @@ class Crawler extends BaseCrawler
     {
         if (!in_array('categories', $this->fields)) return;
         $categories = [];
-        foreach ($payload['movie']['category'] as $category) {
+        foreach ($payload['data']['item']['category'] as $category) {
             if (!trim($category['name'])) continue;
             $categories[] = Category::firstOrCreate(['name' => trim($category['name'])])->id;
         }
-        if($payload['movie']['type'] === 'hoathinh') $categories[] = Category::firstOrCreate(['name' => 'Hoạt Hình'])->id;
-        if($payload['movie']['type'] === 'tvshows') $categories[] = Category::firstOrCreate(['name' => 'TV Shows'])->id;
+        if($payload['data']['item']['type'] === 'hoathinh') $categories[] = Category::firstOrCreate(['name' => 'Hoạt Hình'])->id;
+        if($payload['data']['item']['type'] === 'tvshows') $categories[] = Category::firstOrCreate(['name' => 'TV Shows'])->id;
         $movie->categories()->sync($categories);
     }
 
@@ -130,7 +130,7 @@ class Crawler extends BaseCrawler
         if (!in_array('regions', $this->fields)) return;
 
         $regions = [];
-        foreach ($payload['movie']['country'] as $region) {
+        foreach ($payload['data']['item']['country'] as $region) {
             if (!trim($region['name'])) continue;
             $regions[] = Region::firstOrCreate(['name' => trim($region['name'])])->id;
         }
@@ -142,8 +142,8 @@ class Crawler extends BaseCrawler
         if (!in_array('tags', $this->fields)) return;
 
         $tags = [];
-        $tags[] = Tag::firstOrCreate(['name' => trim($movie->name)])->id;
-        $tags[] = Tag::firstOrCreate(['name' => trim($movie->origin_name)])->id;
+        $tags[] = Tag::firstOrCreate(['name' => trim($payload['data']['item']['name'])])->id;
+        $tags[] = Tag::firstOrCreate(['name' => trim($payload['data']['item']['origin_name'])])->id;
 
         $movie->tags()->sync($tags);
     }
@@ -157,12 +157,13 @@ class Crawler extends BaseCrawler
     {
         if (!in_array('episodes', $this->fields)) return;
         $flag = 0;
-        foreach ($payload['episodes'] as $server) {
+        foreach ($payload['data']['item']['episodes'] as $server) {
             foreach ($server['server_data'] as $episode) {
+                $serverName = $server['server_name'] . ' (OP)';
                 if (!empty($episode['link_m3u8'])) {
                     Episode::updateOrCreate([
                         'id' => $movie->episodes[$flag]->id ?? null,
-                        'server' => $server['server_name']
+                        'server' => $serverName
                     ], [
                         'name' => $episode['name'],
                         'movie_id' => $movie->id,
@@ -175,7 +176,7 @@ class Crawler extends BaseCrawler
                 if (!empty($episode['link_embed'])) {
                     Episode::updateOrCreate([
                         'id' => $movie->episodes[$flag]->id ?? null,
-                        'server' => $server['server_name']
+                        'server' => $serverName
                     ], [
                         'name' => $episode['name'],
                         'movie_id' => $movie->id,

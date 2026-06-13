@@ -1,13 +1,13 @@
 <?php
 
-namespace Vsphim\Crawler\VsphimCrawler\Controllers;
+namespace VsMov\Crawler\VsMovCrawler\Controllers;
 
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\Settings\app\Models\Setting;
 use Illuminate\Support\Facades\Route;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Http\Request;
-use Vsphim\Crawler\VsphimCrawler\Option;
+use VsMov\Crawler\VsMovCrawler\Option;
 use Prologue\Alerts\Facades\Alert;
 
 class CrawlerSettingController extends CrudController
@@ -22,7 +22,7 @@ class CrawlerSettingController extends CrudController
     public function setup()
     {
         CRUD::setModel(Setting::class);
-        CRUD::setRoute(config('backpack.base.route_prefix') . '/plugin/vsphim-crawler/options');
+        CRUD::setRoute(config('backpack.base.route_prefix') . '/plugin/vsmov-crawler/options');
         CRUD::setEntityNameStrings('crawler options', 'crawler options');
     }
 
@@ -59,7 +59,7 @@ class CrawlerSettingController extends CrudController
 
         $this->data['saveAction'] = $this->crud->getSaveAction();
 
-        return view('vsphim-crawler::options', $this->data);
+        return view('vsmov-crawler::options', $this->data);
     }
 
     /**

@@ -1,18 +1,21 @@
 <?php
 
-namespace Vsphim\Crawler\VsphimCrawler\Controllers;
+namespace VsMov\Crawler\VsMovCrawler\Controllers;
 
 
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Vsphim\Crawler\VsphimCrawler\Crawler;
-use Vsphim\Core\Models\Movie;
+use VsMov\Crawler\VsMovCrawler\Crawler;
+use VsMov\Crawler\VsMovCrawler\CrawlerOPhim;
+use VsMov\Crawler\VsMovCrawler\CrawlerKKPhim;
+use VsMov\Crawler\VsMovCrawler\CrawlerNguonC;
+use VsMov\Core\Models\Movie;
 
 /**
  * Class CrawlController
- * @package Vsphim\Crawler\VsphimCrawler\Controllers
+ * @package VsMov\Crawler\VsMovCrawler\Controllers
  * @property-read \Backpack\CRUD\app\Library\CrudPanel\CrudPanel $crud
  */
 class CrawlController extends CrudController
@@ -26,7 +29,99 @@ class CrawlController extends CrudController
 
             foreach ($request['link'] as $link) {
                 if (preg_match('/(.*?)(\/phim\/)(.*?)/', $link)) {
-                    $link = sprintf('%s/phim/%s', config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api'), explode('phim/', $link)[1]);
+                    $link = sprintf('%s/phim/%s', config('vsmov_crawler.domain', 'https://vsmov.com/api'), explode('phim/', $link)[1]);
+                    $response = json_decode(file_get_contents($link), true);
+                    $data->push(collect($response['movie'])->only('name', 'slug')->toArray());
+                } else {
+                    for ($i = $request['from']; $i <= $request['to']; $i++) {
+                        $response = json_decode(Http::timeout(30)->get($link, [
+                            'page' => $i
+                        ]), true);
+                        if ($response['status']) {
+                            $data->push(...$response['items']);
+                        }
+                    }
+                }
+            }
+
+            return $data->shuffle();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchOPhim(Request $request)
+    {
+        try {
+            $data = collect();
+
+            $request['link'] = preg_split('/[\n\r]+/', $request['link']);
+
+            foreach ($request['link'] as $link) {
+                $link = trim($link);
+                if (preg_match('/\/phim\/([^\/\?]+)/', $link, $matches)) {
+                    $link = sprintf('%s/v1/api/phim/%s', config('vsmov_crawler.domain_ophim', 'https://ophim1.com'), $matches[1]);
+                    $response = json_decode(file_get_contents($link), true);
+                    $data->push(collect($response['data']['item'])->only('name', 'slug')->toArray());
+                } else {
+                    for ($i = $request['from']; $i <= $request['to']; $i++) {
+                        $response = json_decode(Http::timeout(30)->get($link, [
+                            'page' => $i
+                        ]), true);
+                        if ($response['status']) {
+                            $data->push(...$response['data']['items']);
+                        }
+                    }
+
+                }
+            }
+
+            return $data->shuffle();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchKKPhim(Request $request)
+    {
+        try {
+            $data = collect();
+
+            $request['link'] = preg_split('/[\n\r]+/', $request['link']);
+
+            foreach ($request['link'] as $link) {
+                if (preg_match('/(.*?)(\/phim\/)(.*?)/', $link)) {
+                    $link = sprintf('%s/phim/%s', config('vsmov_crawler.domain_kkphim', 'https://phimapi.com'), explode('phim/', $link)[1]);
+                    $response = json_decode(file_get_contents($link), true);
+                    $data->push(collect($response['movie'])->only('name', 'slug')->toArray());
+                } else {
+                    for ($i = $request['from']; $i <= $request['to']; $i++) {
+                        $response = json_decode(Http::timeout(30)->get($link, [
+                            'page' => $i
+                        ]), true);
+                        if ($response['status']) {
+                            $data->push(...$response['items']);
+                        }
+                    }
+                }
+            }
+
+            return $data->shuffle();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function fetchNguonC(Request $request)
+    {
+        try {
+            $data = collect();
+
+            $request['link'] = preg_split('/[\n\r]+/', $request['link']);
+
+            foreach ($request['link'] as $link) {
+                if (preg_match('/\/phim\/([^\/\?]+)/', $link, $matches)) {
+                    $link = sprintf('%s/api/film/%s', config('vsmov_crawler.domain_nguonc', 'https://phim.nguonc.com'), $matches[1]);
                     $response = json_decode(file_get_contents($link), true);
                     $data->push(collect($response['movie'])->only('name', 'slug')->toArray());
                 } else {
@@ -52,13 +147,13 @@ class CrawlController extends CrudController
         $categories = [];
         $regions = [];
         try {
-            $categories = Cache::remember('vsphim_categories', 86400, function () {
-                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api'))), true) ?? [];
+            $categories = Cache::remember('vsmov_categories', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsmov_crawler.domain', 'https://vsmov.com/api'))), true) ?? [];
                 return collect($data)->pluck('name', 'name')->toArray();
             });
 
-            $regions = Cache::remember('vsphim_regions', 86400, function () {
-                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api'))), true) ?? [];
+            $regions = Cache::remember('vsmov_regions', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsmov_crawler.domain', 'https://vsmov.com/api'))), true) ?? [];
                 return collect($data)->pluck('name', 'name')->toArray();
             });
         } catch (\Throwable $th) {
@@ -67,15 +162,120 @@ class CrawlController extends CrudController
 
         $fields = $this->movieUpdateOptions();
 
-        return view('vsphim-crawler::crawl', compact('fields', 'regions', 'categories'));
+        return view('vsmov-crawler::crawl', compact('fields', 'regions', 'categories'));
+    }
+
+    public function showOPhimPage(Request $request)
+    {
+        $categories = [];
+        $regions = [];
+        try {
+            $categories = Cache::remember('ophim_categories', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsmov_crawler.domain_ophim', 'https://ophim1.com'))), true) ?? [];
+                return collect($data)->pluck('name', 'name')->toArray();
+            });
+
+            $regions = Cache::remember('ophim_regions', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsmov_crawler.domain_ophim', 'https://ophim1.com'))), true) ?? [];
+                return collect($data)->pluck('name', 'name')->toArray();
+            });
+        } catch (\Throwable $th) {
+
+        }
+
+        $fields = $this->movieUpdateOptions();
+
+        return view('vsmov-crawler::ophim-crawl', compact('fields', 'regions', 'categories'));
+    }
+
+    public function showKKPhimPage(Request $request)
+    {
+        $categories = [];
+        $regions = [];
+        try {
+            $categories = Cache::remember('kkphim_categories', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsmov_crawler.domain_kkphim', 'https://phimapi.com'))), true) ?? [];
+                return collect($data)->pluck('name', 'name')->toArray();
+            });
+
+            $regions = Cache::remember('kkphim_regions', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsmov_crawler.domain_kkphim', 'https://phimapi.com'))), true) ?? [];
+                return collect($data)->pluck('name', 'name')->toArray();
+            });
+        } catch (\Throwable $th) {
+
+        }
+
+        $fields = $this->movieUpdateOptions();
+
+        return view('vsmov-crawler::kkphim-crawl', compact('fields', 'regions', 'categories'));
+    }
+
+    public function showNguonCPage(Request $request)
+    {
+        $categories = [];
+        $regions = [];
+        try {
+            $categories = Cache::remember('ophim_categories', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/the-loai', config('vsmov_crawler.domain_ophim', 'https://ophim1.com'))), true) ?? [];
+                return collect($data)->pluck('name', 'name')->toArray();
+            });
+
+            $regions = Cache::remember('ophim_regions', 86400, function () {
+                $data = json_decode(file_get_contents(sprintf('%s/quoc-gia', config('vsmov_crawler.domain_ophim', 'https://ophim1.com'))), true) ?? [];
+                return collect($data)->pluck('name', 'name')->toArray();
+            });
+        } catch (\Throwable $th) {
+
+        }
+
+        $fields = $this->movieUpdateOptions();
+
+        return view('vsmov-crawler::nguonc-crawl', compact('fields', 'regions', 'categories'));
     }
 
     public function crawl(Request $request)
     {
-        $pattern = sprintf('%s/phim/{slug}', config('vsphim_crawler.domain', 'https://nguon.vsphim.com/api'));
+        $pattern = sprintf('%s/phim/{slug}', config('vsmov_crawler.domain', 'https://vsmov.com/api'));
         try {
             $link = str_replace('{slug}', $request['slug'], $pattern);
             $crawler = (new Crawler($link, request('fields', []), request('excludedCategories', []), request('excludedRegions', []), request('excludedType', []), request('forceUpdate', false)))->handle();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'wait' => false], 500);
+        }
+        return response()->json(['message' => 'OK', 'wait' => $crawler ?? true]);
+    }
+
+    public function crawlOPhim(Request $request)
+    {
+        $pattern = sprintf('%s/v1/api/phim/{slug}', config('vsmov_crawler.domain_ophim', 'https://ophim1.com'));
+        try {
+            $link = str_replace('{slug}', $request['slug'], $pattern);
+            $crawler = (new CrawlerOPhim($link, request('fields', []), request('excludedCategories', []), request('excludedRegions', []), request('excludedType', []), request('forceUpdate', false)))->handle();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'wait' => false], 500);
+        }
+        return response()->json(['message' => 'OK', 'wait' => $crawler ?? true]);
+    }
+
+    public function crawlKKPhim(Request $request)
+    {
+        $pattern = sprintf('%s/phim/{slug}', config('vsmov_crawler.domain_kkphim', 'https://phimapi.com'));
+        try {
+            $link = str_replace('{slug}', $request['slug'], $pattern);
+            $crawler = (new CrawlerKKPhim($link, request('fields', []), request('excludedCategories', []), request('excludedRegions', []), request('excludedType', []), request('forceUpdate', false)))->handle();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'wait' => false], 500);
+        }
+        return response()->json(['message' => 'OK', 'wait' => $crawler ?? true]);
+    }
+
+    public function crawlNguonC(Request $request)
+    {
+        $pattern = sprintf('%s/api/film/{slug}', config('vsmov_crawler.domain_nguonc', 'https://phim.nguonc.com'));
+        try {
+            $link = str_replace('{slug}', $request['slug'], $pattern);
+            $crawler = (new CrawlerNguonC($link, request('fields', []), request('excludedCategories', []), request('excludedRegions', []), request('excludedType', []), request('forceUpdate', false)))->handle();
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage(), 'wait' => false], 500);
         }

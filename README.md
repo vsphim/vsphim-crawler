@@ -1,45 +1,28 @@
-# Vsphim Crawler
+# VSMOV CRAWLER
 
 ## Demo
-### Crawl Page
+### Trang Crawl
 ![Alt text](https://i.ibb.co/WPy9Hp7/CRAWLER-INDEX.png "Crawler Page")
 
-### Options Page
+### Trang Cấu Hình
 ![Alt text](https://i.ibb.co/zmDYwRd/CRAWLER-OPTION.png "Options Page")
 
-### Schedule Config
+### Cấu Hình Tự Động
 ![Alt text](https://i.ibb.co/5jY3s2P/CRAWLER-SCHEDULE.png "Options Page")
 
 ## Requirements
-https://github.com/vsphim/vsphim-core
+https://github.com/vsphim/vsmov-core
 
 ## Install
-- In your project folder: `composer require vsphim/vsphim-crawler`
+- Tại thư mục của Project: `composer require vsmov/vsmov-crawler`
 
 ## Update
-- In your project folder: `composer update vsphim/vsphim-crawler`
-
-## API Source
-- Default API domain: `https://nguon.vsphim.com/api-document`
-- Endpoints are compatible with Vsphim API gateway:
-  - `/danh-sach/phim-moi-cap-nhat`
-  - `/the-loai`
-  - `/quoc-gia`
-  - `/phim/{slug}`
+- Tại thư mục của Project: `composer update vsmov/vsmov-crawler`
 
 ## Setup Crontab
-Use the `vsphim:plugins:vsphim-crawler:schedule` command in your crontab, for example:
-
-```bash
-*/10 * * * * php /path/to/artisan vsphim:plugins:vsphim-crawler:schedule >> /dev/null 2>&1
-```
+[Setup crontab, add this entry](https://github.com/vsmov/vsmov-core#reset-view-counter)
 
 ## Changelog
-### 2.0.0
-- Rebranded to Vsphim
-- Switched to `vsphim/vsphim-core`
-- Default API domain changed to `https://nguon.vsphim.com/api-document`
-
 ### 1.1.0
 - Update crawler schedule
 ### 1.0.3
