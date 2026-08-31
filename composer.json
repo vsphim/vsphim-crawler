@@ -1,9 +1,9 @@
 {
-    "name": "vsphim/vsphim-crawler",
+    "name": "vsphim2/vsphim-crawler",
     "description": "Vsphim crawler plugin for Vsphim Core",
     "type": "package",
     "require": {
-        "vsphim/vsphim-core": "^1.0.0",
+        "vsphim2/vsphim-core": "^1.0.0",
         "intervention/image": "^2.7"
     },
     "license": "MIT",
